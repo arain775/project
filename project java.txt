@@ -1,0 +1,169 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+abstract class ParkingFeeCalculator {
+    public abstract double calculateFee(Vehicle v);
+}
+
+class Vehicle {
+    protected String vehicleNumber;
+    protected String vehicleType;
+
+    public Vehicle(String vehicleNumber, String vehicleType) {
+        this.vehicleNumber = vehicleNumber;
+        this.vehicleType = vehicleType;
+    }
+
+    public String getVehicleNumber() {
+        return vehicleNumber;
+    }
+
+    public String getVehicleType() {
+        return vehicleType;
+    }
+}
+
+class Car extends Vehicle {
+    private int carSpecificAttribute;
+
+    public Car(String vehicleNumber, String vehicleType, int carSpecificAttribute) {
+        super(vehicleNumber, vehicleType);
+        this.carSpecificAttribute = carSpecificAttribute;
+    }
+}
+
+class ParkingSpace {
+    private int spaceID;
+    private boolean isOccupied;
+
+    public ParkingSpace(int spaceID) {
+        this.spaceID = spaceID;
+        this.isOccupied = false;
+    }
+
+    public void occupySpace() {
+        this.isOccupied = true;
+    }
+
+    public void freeSpace() {
+        this.isOccupied = false;
+    }
+}
+
+class CarFeeCalculator extends ParkingFeeCalculator {
+    @Override
+    public double calculateFee(Vehicle v) {
+        // Specific fee calculation for Car
+        return 10.0; // Example value
+    }
+}
+
+class ParkingSystem {
+    private List<Vehicle> vehicleList;
+    private int capacity;
+    private int currentCount;
+
+    public ParkingSystem(int capacity) {
+        this.capacity = capacity;
+        this.vehicleList = new ArrayList<>();
+        this.currentCount = 0;
+    }
+
+    public boolean checkAvailability() {
+        return currentCount < capacity;
+    }
+
+    public void addVehicle(Vehicle v) {
+        if (checkAvailability()) {
+            vehicleList.add(v);
+            currentCount++;
+            System.out.println("Vehicle added: " + v.getVehicleNumber());
+        } else {
+            System.out.println("No parking space available.");
+        }
+    }
+
+    public double calculateFees(Vehicle v) {
+        ParkingFeeCalculator feeCalculator = new CarFeeCalculator();
+        return feeCalculator.calculateFee(v);
+    }
+
+    public void removeVehicle(String vehicleNumber) {
+        for (Vehicle v : vehicleList) {
+            if (v.getVehicleNumber().equals(vehicleNumber)) {
+                vehicleList.remove(v);
+                currentCount--;
+                System.out.println("Vehicle removed: " + vehicleNumber);
+                break;
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter parking capacity: ");
+        int capacity = scanner.nextInt();
+        scanner.nextLine(); // Consume the newline character
+
+        ParkingSystem parkingSystem = new ParkingSystem(capacity);
+
+        while (true) {
+            System.out.println("\nMenu:");
+            System.out.println("1. Add Vehicle");
+            System.out.println("2. Remove Vehicle");
+            System.out.println("3. Check Availability");
+            System.out.println("4. Calculate Fees");
+            System.out.println("5. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume the newline character
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter vehicle number: ");
+                    String vehicleNumber = scanner.nextLine();
+                    System.out.print("Enter vehicle type (Car): ");
+                    String vehicleType = scanner.nextLine();
+                    // Assuming carSpecificAttribute is not used for fee calculation in this example
+                    Vehicle vehicle = new Car(vehicleNumber, vehicleType, 0);
+                    parkingSystem.addVehicle(vehicle);
+                    break;
+                case 2:
+                    System.out.print("Enter vehicle number to remove: ");
+                    String numberToRemove = scanner.nextLine();
+                    parkingSystem.removeVehicle(numberToRemove);
+                    break;
+                case 3:
+                    if (parkingSystem.checkAvailability()) {
+                        System.out.println("Parking is available.");
+                    } else {
+                        System.out.println("No parking space available.");
+                    }
+                    break;
+                case 4:
+                    System.out.print("Enter vehicle number to calculate fees: ");
+                    String numberForFees = scanner.nextLine();
+                    Vehicle vehicleForFees = null;
+                    for (Vehicle v : parkingSystem.vehicleList) {
+                        if (v.getVehicleNumber().equals(numberForFees)) {
+                            vehicleForFees = v;
+                            break;
+                        }
+                    }
+                    if (vehicleForFees != null) {
+                        System.out.println("Parking fee: " + parkingSystem.calculateFees(vehicleForFees));
+                    } else {
+                        System.out.println("Vehicle not found.");
+                    }
+                    break;
+                case 5:
+                    System.out.println("Exiting the system...");
+                    scanner.close();
+                    return;
+                default:
+                    System.out.println("Invalid option. Please choose again.");
+            }
+        }
+    }
+}
